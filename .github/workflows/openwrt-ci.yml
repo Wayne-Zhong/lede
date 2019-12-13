@@ -7,29 +7,28 @@
 # <https://github.com/KFERMercer/OpenWrt-CI>
 #
 
-name: 我的Openwrt-CI V2.0
+name: 我的Openwrt-CI V2.1
 
 on:
   push:
     branches: 
-      - master
+      - CI-demo
+  #     ↑↑↑ 改成你的分支名, 一般是master
   # schedule:
   #   - cron: 0 20 * * *
   # release:
   #   types: [published]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@master
         with:
-          ref: master
+          ref: CI-demo
+        #      ↑↑↑ 改成你的分支名, 一般是master
 
       - name: Initialization environment
         env:
@@ -37,8 +36,23 @@ jobs:
         run: |
           docker rmi `docker images -q`
           echo "Deleting files, please wait ..."
-          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php
-          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+          sudo rm -rf \
+            /usr/share/dotnet \
+            /etc/mysql \
+            /etc/php
+          sudo -E apt-get -y purge \
+            azure-cli \
+            ghc* \
+            zulu* \
+            hhvm \
+            llvm* \
+            firefox \
+            google* \
+            dotnet* \
+            powershell \
+            openjdk* \
+            mysql* \
+            php*
           sudo -E apt-get update
           sudo -E apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler
           sudo -E apt-get -y autoremove --purge
@@ -100,9 +114,9 @@ jobs:
           EOF
 
           # 编译UEFI固件:
-          # cat >> .config <<EOF
-          # CONFIG_EFI_IMAGES=y
-          # EOF
+          cat >> .config <<EOF
+          CONFIG_EFI_IMAGES=y
+          EOF
 
           # IPv6支持:
           # cat >> .config <<EOF
@@ -111,14 +125,14 @@ jobs:
           # EOF
 
           # 多文件系统支持:
-          # cat >> .config <<EOF
-          # CONFIG_PACKAGE_kmod-fs-nfs=y
-          # CONFIG_PACKAGE_kmod-fs-nfs-common=y
-          # CONFIG_PACKAGE_kmod-fs-nfs-v3=y
-          # CONFIG_PACKAGE_kmod-fs-nfs-v4=y
-          # CONFIG_PACKAGE_kmod-fs-ntfs=y
-          # CONFIG_PACKAGE_kmod-fs-squashfs=y
-          # EOF
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_kmod-fs-nfs=y
+          CONFIG_PACKAGE_kmod-fs-nfs-common=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v3=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v4=y
+          CONFIG_PACKAGE_kmod-fs-ntfs=y
+          CONFIG_PACKAGE_kmod-fs-squashfs=y
+          EOF
 
           # USB3.0支持:
           # cat >> .config <<EOF
@@ -136,9 +150,9 @@ jobs:
           # CONFIG_PACKAGE_luci-app-baidupcs-web=y
           # CONFIG_PACKAGE_luci-app-docker=y
           # CONFIG_PACKAGE_luci-app-frpc=y
-          # CONFIG_PACKAGE_luci-app-hd-idle=y
-          # CONFIG_PACKAGE_luci-app-kodexplorer=y
-          # CONFIG_PACKAGE_luci-app-minidlna=y
+          CONFIG_PACKAGE_luci-app-hd-idle=y
+          CONFIG_PACKAGE_luci-app-kodexplorer=y
+          CONFIG_PACKAGE_luci-app-minidlna=y
           # CONFIG_PACKAGE_luci-app-openvpn=y
           # CONFIG_PACKAGE_luci-app-openvpn-server=y
           CONFIG_PACKAGE_luci-app-qbittorrent=y
@@ -148,9 +162,9 @@ jobs:
           CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Socks=y
           CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray=y
           CONFIG_PACKAGE_luci-app-ttyd=y
-          CONFIG_PACKAGE_luci-app-v2ray-server=y
-          CONFIG_PACKAGE_luci-app-verysync=y
-          CONFIG_PACKAGE_luci-app-webadmin=y
+          # CONFIG_PACKAGE_luci-app-v2ray-server=y
+          # CONFIG_PACKAGE_luci-app-verysync=y
+          # CONFIG_PACKAGE_luci-app-webadmin=y
           CONFIG_PACKAGE_luci-app-wireguard=y
           CONFIG_PACKAGE_luci-app-wrtbwmon=y
           CONFIG_PACKAGE_luci-app-mwan=y
@@ -164,15 +178,15 @@ jobs:
           EOF
 
           # LuCI主题:
-          # cat >> .config <<EOF
-          # CONFIG_PACKAGE_luci-theme-argon=y
-          # CONFIG_PACKAGE_luci-theme-netgear=y
-          # EOF
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_luci-theme-argon=y
+          CONFIG_PACKAGE_luci-theme-netgear=y
+          EOF
 
           # 常用软件包:
           cat >> .config <<EOF
-          # CONFIG_PACKAGE_curl=y
-          # CONFIG_PACKAGE_htop=y
+          CONFIG_PACKAGE_curl=y
+          CONFIG_PACKAGE_htop=y
           CONFIG_PACKAGE_nano=y
           CONFIG_PACKAGE_screen=y
           CONFIG_PACKAGE_tree=y
@@ -181,10 +195,10 @@ jobs:
           EOF
 
           # 取消编译VMware镜像以及镜像填充 (不要删除被缩进的注释符号):
-          # cat >> .config <<EOF
-          # # CONFIG_TARGET_IMAGES_PAD is not set
-          # # CONFIG_VMDK_IMAGES is not set
-          # EOF
+          cat >> .config <<EOF
+          # CONFIG_TARGET_IMAGES_PAD is not set
+          # CONFIG_VMDK_IMAGES is not set
+          EOF
 
           # 
           # ========================固件定制部分结束========================
@@ -193,7 +207,7 @@ jobs:
           sed -i 's/^[ \t]*//g' ./.config
           make defconfig
 
-      - name: Make download
+      - name: Download package source code
         run: |
           make download -j8
           find dl -size -1024c -exec ls -l {} \;
@@ -204,15 +218,8 @@ jobs:
           echo -e "$(nproc) thread build."
           make -j$(nproc) V=s
 
-      - name: Assemble artifact
-        run: |
-          rm -rf ./artifact/
-          mkdir -p ./artifact/
-          find ./bin/targets/ -name "*combined*img*" | xargs -i mv -f {} ./artifact/
-          find ./bin/targets/ -name "*sysupgrade*bin*" | xargs -i mv -f {} ./artifact/
-
-      - name: Upload artifact
+      - name : Upload artifact
         uses: actions/upload-artifact@master
         with:
           name: OpenWrt firmware
-          path: ./artifact/
+          path: bin/targets
